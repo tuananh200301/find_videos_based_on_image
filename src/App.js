@@ -1,20 +1,50 @@
 import './App.css';
-import { useRef, useState } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 import logo from './imges/logo.png'
-import vid1 from './videos/004d8cd8c5cc42b4be45c773533a3fdc.mp4'
-import vid2 from './videos/67f764a902d84e1f86d830199902fa7e.mp4'
-import vid3 from './videos/95d4a1ea91b44424b768ac5a6a430aba.mp4'
 import VideoGridModal from './components/videoGrid';
 import { BsBadgeHd, BsClipboardCheck } from "react-icons/bs";
 import { AiOutlineFileImage } from "react-icons/ai";
 import { LuImagePlus } from "react-icons/lu";
+import { type } from '@testing-library/user-event/dist/type';
+import axios from 'axios';
+export const SET_FILE_UPLOAD = "SET_FILE_UPLOAD"
+export const REQUEST_SEARCH_VIDEO = "REQUEST_SEARCH_VIDEO"
+export const REQUEST_SEARCH_VIDEO_SUCCESS = "REQUEST_SEARCH_VIDEO_SUCCESS"
+export const REQUEST_SEARCH_VIDEO_FAILURE = "REQUEST_SEARCH_VIDEO_FAILURE"
+const reduce = (state, action) => {
+  switch (action.type) {
+    case SET_FILE_UPLOAD:
+      return {
+        ...state, file: action.payload,
+      }
+    case REQUEST_SEARCH_VIDEO:
+      return {
+        ...state, loading: true,
+      }
+    case REQUEST_SEARCH_VIDEO_SUCCESS:
+      return {
+        ...state, dataVideo: action.payload.data, loading: false,
+      }
+    case REQUEST_SEARCH_VIDEO_FAILURE:
+      return {
+        ...state, loading: false, error: action.payload,
+      }
+    default:
+      return {
+        ...state
+      }
+  }
+}
 function App() {
+  const [{ loading, dataVideo, error, file }, dispatch] = useReducer(reduce, { loading: false, dataVideo: null, error: "", file: null })
   const [selectedImage, setSelectedImage] = useState(null);
   const [searchResults, setSearchResults] = useState([]);
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [searchClicked, setSearchClicked] = useState(false);
-
   const fileInputRef = useRef(null);
+
+  const handlePostDataVideo = (file) => { }
+
 
   const handleDrop = (e) => {
     e.preventDefault();
@@ -45,18 +75,38 @@ function App() {
   const handleFileInputChange = (e) => {
     const file = e.target.files[0];
     handleImageUpload(file);
+    dispatch({ type: SET_FILE_UPLOAD, payload: file });
   };
 
   const handleDragOver = (e) => {
     e.preventDefault();
   };
-  const videoPaths = [
-    { id: 1, path: vid1, time: 10.0 },
-    { id: 2, path: vid2, time: 6.0 },
-    { id: 3, path: vid3, time: 1.0 },
-  ];
-  const handleSearch = () => {
-    setSearchResults(videoPaths);
+  // const videoPaths = [
+  //   { id: 1, path: vid1, time: 10.0 },
+  //   { id: 2, path: vid2, time: 6.0 },
+  //   { id: 3, path: vid3, time: 1.0 },
+  // ];
+  const handleSearch = async () => {
+    dispatch({ type: REQUEST_SEARCH_VIDEO })
+    console.log(REQUEST_SEARCH_VIDEO)
+    try {
+      const formData = new FormData();
+      formData.append("file", file)
+      const { data } = await axios.post('http://localhost:3001/search', formData)
+      dispatch({ type: REQUEST_SEARCH_VIDEO_SUCCESS, payload: data })
+      console.log(REQUEST_SEARCH_VIDEO_SUCCESS)
+    } catch (error) {
+      if (error.response) {
+        dispatch({ type: REQUEST_SEARCH_VIDEO_FAILURE, payload: error.response.data.message })
+        console.log(error.response.data.message)
+      }
+      else {
+        dispatch({ type: REQUEST_SEARCH_VIDEO_FAILURE, payload: error.message })
+        console.log(error.message)
+      }
+      console.log(REQUEST_SEARCH_VIDEO_FAILURE)
+    }
+
     setSearchClicked(true);
   };
   const handleVideoClick = (video) => {
@@ -139,8 +189,8 @@ function App() {
                 <div className="search-results">
                   <h2>Kết quả tìm kiếm</h2>
                   <div className="video-grid">
-                    {searchResults.map((video) => (
-                      <div key={video.id} className="video-item" onClick={() => handleVideoClick(video)}>
+                    {dataVideo && [dataVideo].map((video, index) => (
+                      <div key={index} className="video-item" onClick={() => handleVideoClick(video)}>
                         <video src={video.path} type="video/mp4" controls onLoadedMetadata={(e) => e.target.currentTime = video.time} width="300" height="180" />
                       </div>
                     ))}
@@ -151,7 +201,6 @@ function App() {
                 </div>
               ) : (
                 <div className="search-results">
-
                   <p className="no-search-results">Không có video nào được tìm thấy có kết quả tương đồng với ảnh của bạn<br />Vui lòng thử với file ảnh khác<br />Xin cảm ơn!</p>
                 </div>
               )}
