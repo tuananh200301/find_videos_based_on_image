@@ -51,9 +51,9 @@ function App() {
     e.preventDefault();
   };
   const videoPaths = [
-    // { id: 1, path: vid1, title: 'Video 1' },
-    // { id: 2, path: vid2, title: 'Video 2' },
-    // { id: 3, path: vid3, title: 'Video 3' },
+    { id: 1, path: vid1, time: 10.0 },
+    { id: 2, path: vid2, time: 6.0 },
+    { id: 3, path: vid3, time: 1.0 },
   ];
   const handleSearch = () => {
     setSearchResults(videoPaths);
@@ -141,8 +141,7 @@ function App() {
                   <div className="video-grid">
                     {searchResults.map((video) => (
                       <div key={video.id} className="video-item" onClick={() => handleVideoClick(video)}>
-                        <video src={video.path} type="video/mp4" controls width="300" height="180" />
-                        <p>{video.title}</p>
+                        <video src={video.path} type="video/mp4" controls onLoadedMetadata={(e) => e.target.currentTime = video.time} width="300" height="180" />
                       </div>
                     ))}
                     {selectedVideo && (
