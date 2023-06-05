@@ -69,7 +69,8 @@
     padding-top: 0.75rem;
     padding-bottom: 0.75rem;
     border-radius: 0.25rem;
-    background-color: #edf2f7;
+    border-width: 1px;
+    background-color: white;
     color: blacks;
     cursor: pointer;
     font-size: 16px;

@@ -6,10 +6,14 @@ import vid2 from './videos/67f764a902d84e1f86d830199902fa7e.mp4'
 import vid3 from './videos/95d4a1ea91b44424b768ac5a6a430aba.mp4'
 import VideoGridModal from './components/videoGrid';
 import { BsBadgeHd, BsClipboardCheck } from "react-icons/bs";
+import { AiOutlineFileImage } from "react-icons/ai";
+import { LuImagePlus } from "react-icons/lu";
 function App() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [searchResults, setSearchResults] = useState([]);
   const [selectedVideo, setSelectedVideo] = useState(null);
+  const [searchClicked, setSearchClicked] = useState(false);
+
   const fileInputRef = useRef(null);
 
   const handleDrop = (e) => {
@@ -47,12 +51,13 @@ function App() {
     e.preventDefault();
   };
   const videoPaths = [
-    { id: 1, path: vid1, title: 'Video 1' },
-    { id: 2, path: vid2, title: 'Video 2' },
-    { id: 3, path: vid3, title: 'Video 3' },
+    // { id: 1, path: vid1, title: 'Video 1' },
+    // { id: 2, path: vid2, title: 'Video 2' },
+    // { id: 3, path: vid3, title: 'Video 3' },
   ];
   const handleSearch = () => {
     setSearchResults(videoPaths);
+    setSearchClicked(true);
   };
   const handleVideoClick = (video) => {
     setSelectedVideo(video);
@@ -101,13 +106,14 @@ function App() {
 
           ) : (
             <>
-              <header className="custom-header">Kéo và thả để tải file Ảnh lên</header>
+              <AiOutlineFileImage style={{ fontSize: 50, opacity: 0.7, strokeWidth: 0.1 }} />
+              <div className="custom-header">Kéo và thả để tải file ảnh lên</div>
               <span className="custom-span">Hoặc</span>
               <button
                 className="custom-label"
                 onClick={handleImageClick}
               >
-                Chọn file
+                <LuImagePlus /> Chọn file ảnh
               </button>
               <input
                 type="file"
@@ -127,25 +133,29 @@ function App() {
               <button className="search-button" onClick={handleSearch}>Tìm kiếm Videos</button>
             </div>
           )}
-          {searchResults.length > 0 ? (
-            <div className="search-results">
-              <h2>Kết quả tìm kiếm</h2>
-              <div className="video-grid">
-                {searchResults.map((video) => (
-                  <div key={video.id} className="video-item" onClick={() => handleVideoClick(video)}>
-                    <video src={video.path} type="video/mp4" controls width="300" height="180" />
-                    <p>{video.title}</p>
+          {searchClicked && (
+            <div>
+              {searchResults.length > 0 ? (
+                <div className="search-results">
+                  <h2>Kết quả tìm kiếm</h2>
+                  <div className="video-grid">
+                    {searchResults.map((video) => (
+                      <div key={video.id} className="video-item" onClick={() => handleVideoClick(video)}>
+                        <video src={video.path} type="video/mp4" controls width="300" height="180" />
+                        <p>{video.title}</p>
+                      </div>
+                    ))}
+                    {selectedVideo && (
+                      <VideoGridModal video={selectedVideo} onClose={handleCloseModal} />
+                    )}
                   </div>
-                ))}
-                {selectedVideo && (
-                  <VideoGridModal video={selectedVideo} onClose={handleCloseModal} />
-                )}
-              </div>
-            </div>
-          ) : (
-            <div className="search-results">
-              <p className="no-search-results">Không có video nào được tìm thấy có kết quả tương đồng với ảnh của bạn<br />Vui lòng thử với file ảnh khác<br />Xin cảm ơn!</p>
+                </div>
+              ) : (
+                <div className="search-results">
 
+                  <p className="no-search-results">Không có video nào được tìm thấy có kết quả tương đồng với ảnh của bạn<br />Vui lòng thử với file ảnh khác<br />Xin cảm ơn!</p>
+                </div>
+              )}
             </div>
           )}
         </div>
